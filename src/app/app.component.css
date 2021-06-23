@@ -11,3 +11,15 @@
         font-size: 3.5rem;
     }
 }
+
+.main-logo {
+    scale:80%
+}
+
+.navbar {
+    background-color: #173084 !important;
+}
+
+.header-title {
+    color: #FDC300
+}
