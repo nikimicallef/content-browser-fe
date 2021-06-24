@@ -11,22 +11,62 @@ import { catchError } from 'rxjs/operators';
 })
 export class AppComponent implements OnInit {
   title = 'RBMH Content Browser';
-  content: Content[] = []
+  allContent: Content[] = []
+  topContent: Content[] = []
+  displayedContent: Content[] = []
+  showAllContent = true;
+  gettingMoreContent = false;
+  private contentItems = 15;
+  private pageNumber = 0;
   private url = 'http://localhost:8080/content'
 
   constructor(private http: HttpClient) {
   }
 
   ngOnInit() {
-    this.getContent()
-    .subscribe(content => this.content = content);
+    this.getContent(this.contentItems, this.pageNumber)
+    .subscribe(content => { this.allContent = content; this.displayedContent = this.allContent } );
   }
 
-  getContent(): Observable<Content[]> {
-    return this.http.get<Content[]>(this.url)
+  switchToAllContent() {
+    this.showAllContent = true;
+    this.displayedContent = this.allContent;
+  }
+
+  getContent(contentItems: number, pageNumber: number): Observable<Content[]> {
+    return this.http.get<Content[]>(this.url + "?page="+pageNumber+"&pageSize="+contentItems)
       .pipe(
         catchError(this.handleError<Content[]>('getContent', []))
       );
+  }
+
+  switchToTopContent() {
+    this.displayedContent = [];
+    this.showAllContent = false;
+    if(this.topContent.length == 0) {
+      this.getTopContent()
+      .subscribe(content => {
+        this.topContent = content;
+        this.displayedContent = this.topContent;
+      });
+    } else {
+      this.displayedContent = this.topContent;
+      // this.topContent = []
+      // REFRESH functionality
+    }
+  }
+
+  getTopContent(): Observable<Content[]> {
+    return this.http.get<Content[]>(this.url + "?orderByVotesDesc=true&pageSize=10")
+      .pipe(
+        catchError(this.handleError<Content[]>('getContent', []))
+      );
+  }
+
+  loadMoreContent() {
+    this.pageNumber += 1;
+    this.getContent(this.contentItems, this.pageNumber)
+    .subscribe(content => { Array.prototype.push.apply(this.allContent, content); this.displayedContent = this.allContent } );
   }
 
   /**

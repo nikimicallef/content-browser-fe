@@ -23,3 +23,12 @@
 .header-title {
     color: #FDC300
 }
+
+.loadButtonContainer {
+    padding-top: 3em;
+}
+
+.loadSvg {
+    color: white;
+    height: 100%;
+}
