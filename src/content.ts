@@ -1,6 +1,6 @@
 export interface Content {
     id: string;
-    mediaType: MediaType;
+    mediaType: string;
     source: string;
     title: string;
     contentUrl: string;
@@ -10,9 +10,4 @@ export interface Content {
     length: number;
     aspectRatio: string;
     topic: string;
-}
-
-enum MediaType {
-    VIDEO,
-    IMAGE
 }
