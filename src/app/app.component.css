@@ -21,7 +21,7 @@
 }
 
 .modal-content {
-  background-color: transparent;
+  background-color: rgba(33, 37, 41, 0.9);
 }
 
 .carousel-control-next, .carousel-control-prev {
