@@ -6,8 +6,8 @@ export interface Content {
     contentUrl: string;
     previewUrl: string;
     votes: number;
-    description: string;
-    length: number;
-    aspectRatio: string;
-    topic: string;
+    description: string | null;
+    length: number | null;
+    aspectRatio: string | null;
+    topic: string | null;
 }

@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { Content } from 'src/content';
-import { catchError } from 'rxjs/operators';
-import { environment } from './../environments/environment';
+import { Content } from 'src/app/models/content';
+import { emptyContent } from './models/generators/content.generator';
+import { ContentApiService } from './services/content-api.service';
 
 @Component({
   selector: 'app-root',
@@ -16,72 +14,37 @@ export class AppComponent implements OnInit {
   displayedContent: Content[] = []
   showAllContent = true;
   gettingContent = false;
-  activeContent: Content = { id: "", mediaType: "IMAGE", source: "", title: "", contentUrl: "", previewUrl: "", votes: 0, description: "", length: 0, aspectRatio: "", topic: "" };
+  activeContent: Content = emptyContent();
   activeContentListIndex: number = 0;
   sendingVote = false;
   justVoted = false;
+  noMoreContent = false;
   private contentItems = 15;
   private pageNumber = 0;
 
-  constructor(private http: HttpClient) {
-  }
+  constructor(private contentApiService: ContentApiService) {}
 
   ngOnInit() {
-    this.getContent(this.contentItems, this.pageNumber)
+    this.contentApiService.getContent(this.contentItems, this.pageNumber)
       .subscribe(content => { this.allContent = content; this.displayedContent = this.allContent });
   }
 
-  // HTTP Requests
-
-  getContent(contentItems: number, pageNumber: number): Observable<Content[]> {
-    return this.http.get<Content[]>(environment.apiUrl + "?page=" + pageNumber + "&pageSize=" + contentItems)
-      .pipe(
-        catchError(this.handleError<Content[]>('GET All Content'))
-      );
-  }
-
-  getTopContent(): Observable<Content[]> {
-    return this.http.get<Content[]>(environment.apiUrl + "?orderByVotesDesc=true&pageSize=10")
-      .pipe(
-        catchError(this.handleError<Content[]>('GET Top Content'))
-      );
-  }
-
-  upvoteContent(contentId : string): Observable<Content> {
-    return this.http.post<Content>(environment.apiUrl + "/" + contentId + "/actions/upvote", {})
-      .pipe(
-        catchError(this.handleError<Content>('Upvote Content'))
-      );
-  }
-
-  downvoteContent(contentId : string): Observable<Content> {
-    return this.http.post<Content>(environment.apiUrl + "/" + contentId + "/actions/downvote", {})
-      .pipe(
-        catchError(this.handleError<Content>('Downvote Content'))
-      );
-  }
-
-  private handleError<T>(operation: string) {
-    return (error: any): Observable<T> => {
-
-      console.error("Error when executing " + operation); 
-
-      return of({} as T);
-    };
-  }
-
-  // FE Methods
-
+  /**
+   * Switches from top content to all content. Since data is retrieved on init, it is not refreshed.
+   */
   switchToAllContent() {
     this.showAllContent = true;
     this.displayedContent = this.allContent;
   }
 
+  /**
+   * Switches from all content to top content. If data has not been retrieved yet then it is retrieved from the backend
+   */
   switchToTopContent() {
     this.displayedContent = [];
     this.showAllContent = false;
     if (this.topContent.length == 0) {
-      this.getTopContent()
+      this.contentApiService.getTopContent(10)
         .subscribe(content => {
           this.topContent = content;
           this.displayedContent = this.topContent;
@@ -91,29 +54,49 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /**
+   * Retrieves the next page of content from the backend. If no more content is retrieved set noMoreContent to true
+   */
   loadMoreContent() {
     this.gettingContent = true;
     this.pageNumber += 1;
-    this.getContent(this.contentItems, this.pageNumber)
-      .subscribe(content => { Array.prototype.push.apply(this.allContent, content); this.displayedContent = this.allContent; this.gettingContent = false; });
+    this.contentApiService.getContent(this.contentItems, this.pageNumber)
+      .subscribe(content => { 
+        if(content.length > 0) {
+          Array.prototype.push.apply(this.allContent, content); this.displayedContent = this.allContent; this.gettingContent = false; 
+        } else {
+          this.noMoreContent = true;
+        }
+      });
   }
 
+  /**
+   * Removes any active content on modal close in order to force stopping the video
+   */
   onModalClose() {
-    this.activeContent = { id: "", mediaType: "", source: "", title: "", contentUrl: "", previewUrl: "", votes: 0, description: "", length: 0, aspectRatio: "", topic: "" };
+    this.activeContent = emptyContent();
   }
 
-  incrementActiveImage() {
+  /**
+   * Shows the next piece of content on button click. If there is no more content loaded then the retrieve the next page from the backend. 
+   * If no more content is retrieved, then set noMoreContent to true.
+   */
+  showNextContentAsActiveContent() {
     if (this.activeContentListIndex === this.displayedContent.length - 1) {
       this.gettingContent = true;
       this.pageNumber += 1;
-      this.getContent(this.contentItems, this.pageNumber)
+      this.contentApiService.getContent(this.contentItems, this.pageNumber)
         .subscribe(content => {
-          Array.prototype.push.apply(this.allContent, content);
-          this.displayedContent = this.allContent;
-          this.activeContentListIndex += 1;
-          this.activeContent = this.displayedContent[this.activeContentListIndex];
-          this.gettingContent = false;
-          this.justVoted = false;
+          if(content.length > 0) {
+            Array.prototype.push.apply(this.allContent, content);
+            this.displayedContent = this.allContent;
+            this.activeContentListIndex += 1;
+            this.activeContent = this.displayedContent[this.activeContentListIndex];
+            this.gettingContent = false;
+            this.justVoted = false;
+          } else {
+            this.noMoreContent = true;
+          }
         });
     } else {
       this.activeContentListIndex += 1;
@@ -122,7 +105,10 @@ export class AppComponent implements OnInit {
     }
   }
 
-  decrementActiveImage() {
+  /**
+   * Shows previous piece of content on button click. If already on first content item, do nothing
+   */
+  setPreviousContentAsActiveContent() {
     if(this.activeContentListIndex > 0) {
       this.activeContentListIndex -= 1;
       this.activeContent = this.displayedContent[this.activeContentListIndex];
@@ -130,33 +116,50 @@ export class AppComponent implements OnInit {
     }
   }
 
+  /**
+   * On album image click, set the active content to the content selected along with the index of the item in the list of displayed content
+   * 
+   * @param c content item clicked
+   * @param index index of the item in the list of displayed content
+   */
   imageClick(c: Content, index: number) {
     this.activeContent = c;
     this.activeContentListIndex = index;
   }
 
+  /**
+   * Upvotes and downvotes a piece of content
+   * 
+   * @param content to up/downvote
+   * @param upvote true = user upvoted content, false = user downvoted content
+   */
   vote(content : Content, upvote: boolean) {
     this.sendingVote = true;
     if(upvote) {
-      this.upvoteContent(content.id)
+      this.contentApiService.upvoteContent(content.id)
         .subscribe(newContent => {
           this.updateContentAfterVote(newContent);
         })
     } else {
-      this.downvoteContent(content.id)
+      this.contentApiService.downvoteContent(content.id)
         .subscribe(newContent => {
           this.updateContentAfterVote(newContent);
         })
     }
   }
 
-  private updateContentAfterVote(newContent: Content) {
-    this.activeContent = newContent;
-    this.displayedContent[this.activeContentListIndex] = newContent;
+  /**
+   * Refreshes the content item to contain the new number of votes
+   * 
+   * @param updatedContentEntity returned from the backend with the new vote number
+   */
+  private updateContentAfterVote(updatedContentEntity: Content) {
+    this.activeContent = updatedContentEntity;
+    this.displayedContent[this.activeContentListIndex] = updatedContentEntity;
     if(this.showAllContent) {
-      this.allContent[this.activeContentListIndex] = newContent;
+      this.allContent[this.activeContentListIndex] = updatedContentEntity;
     } else {
-      this.topContent[this.activeContentListIndex] = newContent;
+      this.topContent[this.activeContentListIndex] = updatedContentEntity;
     }
     this.sendingVote = false;
     this.justVoted = true;
