@@ -24,6 +24,9 @@ export class AppComponent implements OnInit {
 
   constructor(private contentApiService: ContentApiService) {}
 
+  /**
+   * Load first page of all content on init
+   */
   ngOnInit() {
     this.contentApiService.getContent(this.contentItems, this.pageNumber)
       .subscribe(content => { this.allContent = content; this.displayedContent = this.allContent });
@@ -96,6 +99,7 @@ export class AppComponent implements OnInit {
             this.justVoted = false;
           } else {
             this.noMoreContent = true;
+            this.gettingContent = false;
           }
         });
     } else {
