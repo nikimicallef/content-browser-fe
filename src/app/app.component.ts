@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { Content } from 'src/content';
 import { catchError } from 'rxjs/operators';
+import { environment } from './../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,6 @@ import { catchError } from 'rxjs/operators';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'RBMH Content Browser';
   allContent: Content[] = []
   topContent: Content[] = []
   displayedContent: Content[] = []
@@ -22,7 +22,6 @@ export class AppComponent implements OnInit {
   justVoted = false;
   private contentItems = 15;
   private pageNumber = 0;
-  private url = 'http://localhost:8080/content'
 
   constructor(private http: HttpClient) {
   }
@@ -35,28 +34,28 @@ export class AppComponent implements OnInit {
   // HTTP Requests
 
   getContent(contentItems: number, pageNumber: number): Observable<Content[]> {
-    return this.http.get<Content[]>(this.url + "?page=" + pageNumber + "&pageSize=" + contentItems)
+    return this.http.get<Content[]>(environment.apiUrl + "?page=" + pageNumber + "&pageSize=" + contentItems)
       .pipe(
         catchError(this.handleError<Content[]>('GET All Content'))
       );
   }
 
   getTopContent(): Observable<Content[]> {
-    return this.http.get<Content[]>(this.url + "?orderByVotesDesc=true&pageSize=10")
+    return this.http.get<Content[]>(environment.apiUrl + "?orderByVotesDesc=true&pageSize=10")
       .pipe(
         catchError(this.handleError<Content[]>('GET Top Content'))
       );
   }
 
   upvoteContent(contentId : string): Observable<Content> {
-    return this.http.post<Content>(this.url + "/" + contentId + "/actions/upvote", {})
+    return this.http.post<Content>(environment.apiUrl + "/" + contentId + "/actions/upvote", {})
       .pipe(
         catchError(this.handleError<Content>('Upvote Content'))
       );
   }
 
   downvoteContent(contentId : string): Observable<Content> {
-    return this.http.post<Content>(this.url + "/" + contentId + "/actions/downvote", {})
+    return this.http.post<Content>(environment.apiUrl + "/" + contentId + "/actions/downvote", {})
       .pipe(
         catchError(this.handleError<Content>('Downvote Content'))
       );
@@ -67,10 +66,11 @@ export class AppComponent implements OnInit {
 
       console.error("Error when executing " + operation); 
 
-      // Let the app keep running by returning an empty result.
       return of({} as T);
     };
   }
+
+  // FE Methods
 
   switchToAllContent() {
     this.showAllContent = true;
@@ -88,8 +88,6 @@ export class AppComponent implements OnInit {
         });
     } else {
       this.displayedContent = this.topContent;
-      // this.topContent = []
-      // REFRESH functionality
     }
   }
 
@@ -143,15 +141,11 @@ export class AppComponent implements OnInit {
       this.upvoteContent(content.id)
         .subscribe(newContent => {
           this.updateContentAfterVote(newContent);
-          this.sendingVote = false;
-          this.justVoted = true;
         })
     } else {
       this.downvoteContent(content.id)
         .subscribe(newContent => {
           this.updateContentAfterVote(newContent);
-          this.sendingVote = false;
-          this.justVoted = true;
         })
     }
   }
@@ -164,6 +158,8 @@ export class AppComponent implements OnInit {
     } else {
       this.topContent[this.activeContentListIndex] = newContent;
     }
+    this.sendingVote = false;
+    this.justVoted = true;
   }
 
 }
