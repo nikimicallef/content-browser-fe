@@ -21,9 +21,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: ng build
+      - name: npm install and npm build
         run: |
-          ng build
+          npm i
+          npm run build:prod
       - name: Push Build to Releases
         uses: ncipollo/release-action@v1
         with:
