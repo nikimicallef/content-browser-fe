@@ -61,12 +61,11 @@ export class AppComponent implements OnInit {
    * Retrieves the next page of content from the backend. If no more content is retrieved set noMoreContent to true
    */
   loadMoreContent() {
-    this.gettingContent = true;
     this.pageNumber += 1;
     this.contentApiService.getContent(this.contentItems, this.pageNumber)
       .subscribe(content => { 
         if(content.length > 0) {
-          Array.prototype.push.apply(this.allContent, content); this.displayedContent = this.allContent; this.gettingContent = false; 
+          Array.prototype.push.apply(this.allContent, content); this.displayedContent = this.allContent; 
         } else {
           this.noMoreContent = true;
         }

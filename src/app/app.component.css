@@ -27,10 +27,6 @@
   height: calc(100vh - 80px)
 }
 
-.loadButtonContainer {
-  padding-top: 3em;
-}
-
 .modal-header {
   border-bottom: 0;
 }
