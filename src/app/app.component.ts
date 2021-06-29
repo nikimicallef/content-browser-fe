@@ -78,6 +78,7 @@ export class AppComponent implements OnInit {
    */
   onModalClose() {
     this.activeContent = emptyContent();
+    this.justVoted = false;
   }
 
   /**

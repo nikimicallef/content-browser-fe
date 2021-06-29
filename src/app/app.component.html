@@ -1,7 +1,7 @@
 <header>
   <div class="navbar shadow-sm">
     <div class="container">
-      <div class="col">
+      <div class="col d-flex justify-content-start">
         <img src="assets/logo.svg" class="logo" />
       </div>
       <div class="col text-center">
@@ -72,8 +72,8 @@
 
                 <div class="container votes-container">
                   <div class="row" *ngIf="justVoted === false;">
-                    <div class="col text-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor"
+                    <div class="col text-center upvote-div">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                         class="bi bi-hand-thumbs-up-fill upvote-btn" viewBox="0 0 16 16"
                         (click)="vote(activeContent, true)">
                         <path
@@ -81,14 +81,14 @@
                         </path>
                       </svg>
                     </div>
-                    <div class="col text-center">
+                    <div class="col text-center votes-div">
                       <h1 class="votes-num" *ngIf="sendingVote === false;">{{activeContent.votes}}</h1>
                       <div *ngIf="sendingVote === true;" class="votes-loading">
                         <div class="spinner-border text-white" role="status"></div>
                       </div>
                     </div>
-                    <div class="col text-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor"
+                    <div class="col text-center downvote-div">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
                         class="bi bi-hand-thumbs-down-fill downvote-btn" viewBox="0 0 16 16"
                         (click)="vote(activeContent, false)">
                         <path

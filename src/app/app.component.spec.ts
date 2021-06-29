@@ -134,10 +134,12 @@ describe('AppComponent', () => {
   describe('onModalClose', () => {
     it('should remove active content', () => {
       app.activeContent = randomImageContent();
+      app.justVoted = true;
   
       app.onModalClose();
   
       expect(app.activeContent).toEqual(emptyContent());
+      expect(app.justVoted).toBe(false);
     });
   });
 

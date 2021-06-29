@@ -3,7 +3,7 @@
 }
 
 .logo {
-  max-width: 20%;
+  max-height: 54px;
 }
 
 .allContentButton {
@@ -40,7 +40,7 @@
 }
 
 .modal-content-container {
-  height: calc(100% - 86px);
+  height: calc(100% - 68px);
 }
 
 .modal-video-container {
@@ -65,21 +65,53 @@
 
 .votes-container {
   padding-top: 20px;
-  padding-bottom: 4px;
+}
+
+.upvote-div .downvote-div {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .upvote-btn {
   color: green;
+  width: 40px;
+  height: 40px;
+}
+
+.votes-div {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .votes-num {
   color: white;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .votes-loading {
-  padding-top: 14px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .downvote-btn {
   color: red;
+  width: 40px;
+  height: 40px;
+}
+
+@media (min-height: 400px) {
+  .modal-content-container {
+    height: calc(100% - 86px);
+  }
+
+  .upvote-btn {
+    width: 60px;
+    height: 60px;
+  }
+
+  .downvote-btn {
+    width: 60px;
+    height: 60px;
+  }
 }
