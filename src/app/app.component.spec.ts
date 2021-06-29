@@ -106,6 +106,8 @@ describe('AppComponent', () => {
     it('should add content to all content and displayed content when data is received', () => {
       app.allContent = randomContentList();
       app.displayedContent = randomContentList();
+      app.showAllContent = true;
+      app.noMoreContent = false;
   
       app.loadMoreContent();
   
@@ -117,6 +119,8 @@ describe('AppComponent', () => {
     it('should set no more content true when no more content is received from BE', () => {
       app.allContent = randomContentList();
       app.displayedContent = randomContentList();
+      app.showAllContent = true;
+      app.noMoreContent = false;
 
       spyOn(contentApiServiceSpy, 'getContent').and.returnValue(
         of([])
@@ -128,6 +132,33 @@ describe('AppComponent', () => {
       expect(app.displayedContent.length).toEqual(2);
       expect(app.noMoreContent).toBe(true);
       expect(contentApiServiceSpy.getContent).toHaveBeenCalledOnceWith(15, 1);
+    });
+
+    it('should not hit the backend when showAllContent is false', () => {
+      app.showAllContent = false;
+      app.noMoreContent = false;
+  
+      app.loadMoreContent();
+  
+      expect(contentApiServiceSpy.getContent).toHaveBeenCalledTimes(0);
+    });
+
+    it('should not hit the backend when noMoreContent is true', () => {
+      app.showAllContent = true;
+      app.noMoreContent = true;
+  
+      app.loadMoreContent();
+  
+      expect(contentApiServiceSpy.getContent).toHaveBeenCalledTimes(0);
+    });
+
+    it('should not hit the backend when showAllContent is false and noMoreContent is true', () => {
+      app.showAllContent = false;
+      app.noMoreContent = true;
+  
+      app.loadMoreContent();
+  
+      expect(contentApiServiceSpy.getContent).toHaveBeenCalledTimes(0);
     });
   });
 
